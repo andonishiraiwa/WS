@@ -30,7 +30,7 @@ public class PersonaController {
 		//Controller --> Services --> DAO
 		return personaService.listar();
 	}
-
+ 
 	// Lanzamos la peticion GET (..../../wsrest/api/persona/idPersona/vehiculo) -->
 	// El vehiculo de CADA PERSONA
 
