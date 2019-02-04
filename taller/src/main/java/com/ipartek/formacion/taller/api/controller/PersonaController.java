@@ -26,7 +26,8 @@ public class PersonaController {
 	@RequestMapping(value = { "/api/persona" }, method = RequestMethod.GET)
 	public ArrayList<Persona> listar() {
 
-		// llamamos al servicio, NO al DAO
+		// llamamos al servicio, NO directamente  al DAO
+		//Controller --> Services --> DAO
 		return personaService.listar();
 	}
 
@@ -64,5 +65,7 @@ public class PersonaController {
 
 		return response;
 	}
+	
+	
 
 }
