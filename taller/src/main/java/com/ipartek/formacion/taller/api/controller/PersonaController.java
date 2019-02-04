@@ -18,45 +18,50 @@ import com.ipartek.formacion.taller.service.PersonaService;
 @CrossOrigin
 @RestController
 public class PersonaController {
-	
-	/* instancia e implementa patron singleton - inyeccion de dependencias */	
+
+	/* instancia e implementa patron singleton - inyeccion de dependencias */
 	@Autowired
 	PersonaService personaService;
-	
-	
-	@RequestMapping( value= {"/api/persona"}, method = RequestMethod.GET)
-	public ArrayList<Persona> listar(){		
-		
-		//llamamos al servicio, NO al DAO		
+
+	@RequestMapping(value = { "/api/persona" }, method = RequestMethod.GET)
+	public ArrayList<Persona> listar() {
+
+		// llamamos al servicio, NO al DAO
 		return personaService.listar();
 	}
-	
-	
-	
-	@RequestMapping( value= {"/api/persona/{id}/vehiculo"}, method = RequestMethod.GET)
-	public ResponseEntity<ArrayList<Vehiculo>> listarVehiculos( @PathVariable int id ){		
-		
-		ResponseEntity<ArrayList<Vehiculo>> response = new ResponseEntity<ArrayList<Vehiculo>>( HttpStatus.NOT_FOUND );
+
+	// Lanzamos la peticion GET (..../../wsrest/api/persona/idPersona/vehiculo) -->
+	// El vehiculo de CADA PERSONA
+
+	@RequestMapping(value = { "/api/persona/{id}/vehiculo" }, method = RequestMethod.GET)
+	public ResponseEntity<ArrayList<Vehiculo>> listarVehiculos(@PathVariable int id) {
+
+		ResponseEntity<ArrayList<Vehiculo>> response = new ResponseEntity<ArrayList<Vehiculo>>(HttpStatus.NOT_FOUND);
 		ArrayList<Vehiculo> vehiculos = new ArrayList<Vehiculo>();
+
+		// Si no hay registro en el ArrayList lo creamos
+
 		try {
-			
+
 			Vehiculo v = new Vehiculo();
 			v.setId(2);
 			v.setMatricula("BI-000-JM");
 			vehiculos.add(v);
-			
+
 			v = new Vehiculo();
 			v.setId(45);
-			v.setMatricula("45-0123-KM");		
+			v.setMatricula("45-0123-KM");
 			vehiculos.add(v);
-			
+
 			response = new ResponseEntity<ArrayList<Vehiculo>>(vehiculos, HttpStatus.OK);
-			
-		}catch (Exception e) {
+
+		} catch (Exception e) {
 			e.printStackTrace();
+
+			// Error custom
 			response = new ResponseEntity<ArrayList<Vehiculo>>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}	
-		
+		}
+
 		return response;
 	}
 

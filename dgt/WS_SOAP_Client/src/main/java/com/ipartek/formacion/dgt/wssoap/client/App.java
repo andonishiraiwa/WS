@@ -9,19 +9,14 @@ public class App {
 
 	public static void main(String[] args) throws RemoteException {
 
-
 		WSVehiculoProxy cliente = new WSVehiculoProxy();
-		
-		Coche cNoExiste = cliente.obtenerDatos("NO_VALIDA");		
+
+		Coche cNoExiste = cliente.obtenerDatos("NO_VALIDA");
 		System.out.println(cNoExiste);
-		
-		
+
 		Coche cExiste = cliente.obtenerDatos("3548MKZ");
 		System.out.println(cExiste);
-		
-		
-		
-		
+
 	}
 
 }

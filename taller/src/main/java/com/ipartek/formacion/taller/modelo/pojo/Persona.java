@@ -13,7 +13,7 @@ public class Persona {
 	private String dni;
 
 	private String telefono;
-	
+
 	private ArrayList<Rol> roles;
 
 	public Persona() {
@@ -79,5 +79,5 @@ public class Persona {
 		return "Persona [id=" + id + ", nombre=" + nombre + ", apellidos=" + apellidos + ", dni=" + dni + ", telefono="
 				+ telefono + ", roles=" + roles + "]";
 	}
-	
+
 }

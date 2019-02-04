@@ -3,7 +3,7 @@ package com.ipartek.formacion.taller.modelo.pojo;
 public class Rol {
 
 	private int id;
-	
+
 	private String nombre;
 
 	public Rol() {

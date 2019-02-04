@@ -8,6 +8,6 @@
 package com.ipartek.formacion.dgt.wssoap;
 
 public interface WSVehiculo extends java.rmi.Remote {
-    public com.ipartek.formacion.modelo.pojo.Coche obtenerDatos(java.lang.String matricula) throws java.rmi.RemoteException;
+	public com.ipartek.formacion.modelo.pojo.Coche obtenerDatos(java.lang.String matricula)
+			throws java.rmi.RemoteException;
 }
- 

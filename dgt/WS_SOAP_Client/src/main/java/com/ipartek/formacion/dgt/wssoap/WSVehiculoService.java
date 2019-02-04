@@ -8,9 +8,10 @@
 package com.ipartek.formacion.dgt.wssoap;
 
 public interface WSVehiculoService extends javax.xml.rpc.Service {
-    public java.lang.String getWSVehiculoAddress();
+	public java.lang.String getWSVehiculoAddress();
 
-    public com.ipartek.formacion.dgt.wssoap.WSVehiculo getWSVehiculo() throws javax.xml.rpc.ServiceException;
+	public com.ipartek.formacion.dgt.wssoap.WSVehiculo getWSVehiculo() throws javax.xml.rpc.ServiceException;
 
-    public com.ipartek.formacion.dgt.wssoap.WSVehiculo getWSVehiculo(java.net.URL portAddress) throws javax.xml.rpc.ServiceException;
+	public com.ipartek.formacion.dgt.wssoap.WSVehiculo getWSVehiculo(java.net.URL portAddress)
+			throws javax.xml.rpc.ServiceException;
 }
