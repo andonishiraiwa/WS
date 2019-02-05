@@ -15,6 +15,7 @@ import com.ipartek.formacion.taller.modelo.pojo.Persona;
 import com.ipartek.formacion.taller.modelo.pojo.Vehiculo;
 import com.ipartek.formacion.taller.service.PersonaService;
 
+
 @CrossOrigin
 @RestController
 public class PersonaController {
@@ -23,49 +24,44 @@ public class PersonaController {
 	@Autowired
 	PersonaService personaService;
 
+	
+	//PEDIMOS LAS PERSONAS
+	
 	@RequestMapping(value = { "/api/persona" }, method = RequestMethod.GET)
 	public ArrayList<Persona> listar() {
 
-		// llamamos al servicio, NO directamente  al DAO
-		//Controller --> Services --> DAO
+		// llamamos al servicio, NO al DAO
 		return personaService.listar();
 	}
- 
-	// Lanzamos la peticion GET (..../../wsrest/api/persona/idPersona/vehiculo) -->
-	// El vehiculo de CADA PERSONA
-
+	
+	//PEDIMOS LOS VEHICULOS DE ESAS PERSONAS (AQUI, NO EN VehiculoController)
+	
 	@RequestMapping(value = { "/api/persona/{id}/vehiculo" }, method = RequestMethod.GET)
-	public ResponseEntity<ArrayList<Vehiculo>> listarVehiculos(@PathVariable int id) {
-
-		ResponseEntity<ArrayList<Vehiculo>> response = new ResponseEntity<ArrayList<Vehiculo>>(HttpStatus.NOT_FOUND);
+	public ArrayList<Vehiculo> listarVehiculos(@PathVariable int id) {
 		ArrayList<Vehiculo> vehiculos = new ArrayList<Vehiculo>();
 
-		// Si no hay registro en el ArrayList lo creamos
-
+		ResponseEntity<ArrayList<Vehiculo>> response;
 		try {
-
 			Vehiculo v = new Vehiculo();
 			v.setId(2);
 			v.setMatricula("BI-000-JM");
 			vehiculos.add(v);
-
-			v = new Vehiculo();
-			v.setId(45);
+			
+			v.setId(3);
 			v.setMatricula("45-0123-KM");
 			vehiculos.add(v);
-
+			
 			response = new ResponseEntity<ArrayList<Vehiculo>>(vehiculos, HttpStatus.OK);
-
 		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-
-			// Error custom
-			response = new ResponseEntity<ArrayList<Vehiculo>>(HttpStatus.INTERNAL_SERVER_ERROR);
+			response=new ResponseEntity<ArrayList<Vehiculo>>(vehiculos, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		return response;
-	}
-	
-	
+		return vehiculos;
 
+	}
+
+//	@RequestMapping(value = { "/api/persona/{id}/vehiculo" }, method = RequestMethod.POST)
+	
 }

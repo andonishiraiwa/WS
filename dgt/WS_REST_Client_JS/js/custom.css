@@ -1,38 +1,3 @@
-
-
-body{
-	background: url("simple.png");
-	background-repeat: no-repeat;
-	background-size: 100%;
-
-  
-}
-
-
-.list-group-item{
-	
-	border:1px solid #aaaacc;
-}
-
-.container{
-background: rgba(25, 25, 40, .3);
-margin-top: 20px;
-
-}	
-	
-h2{
-background:#aaaacc;
-border-radius: 25px  0 25px 0;
-padding:5px;
-text-align:center;
-border-bottom:10px solid black;
-
-
-  
-
-}	
-
-
 #ulVehiculo .matricula{
     font-weight: 600;
     text-transform: uppercase;
@@ -56,4 +21,3 @@ color:grey;
 float: right;
 
 }
-

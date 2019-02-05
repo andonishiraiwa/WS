@@ -2,7 +2,6 @@ package com.ipartek.formacion.modelo.daos;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -12,24 +11,27 @@ import org.apache.log4j.Logger;
 
 import com.ipartek.formacion.modelo.cm.ConnectionManager;
 import com.ipartek.formacion.modelo.pojo.Coche;
+import java.sql.PreparedStatement;
 
 public class CocheDAO {
 
 	private final static Logger LOG = Logger.getLogger(CocheDAO.class);
 	private static CocheDAO INSTANCE = null;
-	
-	private static final String SQL_INSERT = "{call pa_coche_insert(?,?,?,?)}";
-	private static final String SQL_GETALL = "SELECT * FROM coche ORDER BY id DESC LIMIT 100";
+	private String indetmatricula = "";
+
 	private static final String SQL_GETMATRICULA = "{call pa_coche_getByMatricula(?)}";
-	private static final String SQL_GETBYID = "SELECT * FROM COCHE WHERE ID=?";
-	private static final String SQL_DELETEBYID = "DELETE FROM COCHE WHERE ID=?";
-	private static final String SQL_UPDATE = "{call pa_coche_update(?,?,?)}";
+	private static final String SQL_GETMATRICULAS = "SELECT id, matricula, modelo, km FROM coche ORDER BY id DESC LIMIT 100;";
+
+	private static final String SQL_GETBYID = "SELECT id, matricula, modelo, km FROM coche where id=? ;";
+	private static final String SQL_INSERTCOCHE = "INSERT INTO coche(matricula, modelo, km) values (?,?,?);";
+	private static final String SQL_UPDATE = null;
+	private static final String SQL_DELETE = null;
 
 	// constructor privado, solo acceso por getInstance()
 	private CocheDAO() {
 		super();
-	}
-
+	} 
+ 
 	public synchronized static CocheDAO getInstance() {
 
 		if (INSTANCE == null) {
@@ -39,76 +41,163 @@ public class CocheDAO {
 	}
 
 	/**
-	 * Actulizar un coche menos su id y matricula
 	 * 
-	 * @param coche
-	 * @return true si se modifica, false en caso contrario
-	 * @throws Exception si id < 1
+	 * Obtiene una coleccion de coches ordenados por id en orden descendente,
+	 * limitado a 100 registros
+	 * 
+	 * @return si no existe ninguno coleccion inicializada a cero
 	 */
-	public boolean update(Coche coche) throws Exception {
 
-		boolean resul = false;
+	public ArrayList<Coche> getMatriculas() {
+		ArrayList<Coche> matriculas = new ArrayList<Coche>();
+		indetmatricula = "getMatriculas";
+		try (Connection conn = ConnectionManager.getConnection();
+				PreparedStatement pst = conn.prepareStatement(SQL_GETMATRICULAS);) {
 
-		if (coche.getId() < 1) {
-			throw new Exception("Identificador de coche debe ser >= 1");
-
-		} else {
-
-			try (Connection conn = ConnectionManager.getConnection();
-					CallableStatement cs = conn.prepareCall(SQL_UPDATE);) {
-
-				cs.setString(1, coche.getModelo());
-				cs.setInt(2, coche.getKm());
-				cs.setLong(3, coche.getId());
-				int affectedRows = cs.executeUpdate();
-				if (affectedRows == 1) {
-					resul = true;
+			try (ResultSet rs = pst.executeQuery()) {
+				while (rs.next()) {
+					matriculas.add(rowMapper(rs));
 				}
 			}
+		} catch (Exception e) {
+			LOG.error(e);
 		}
-		return resul;
+		return matriculas;
+	}
+
+	/**
+	 * 
+	 * @param id identidicador del coche
+	 * @return null si no lo encuentra, coches con datos si los hay
+	 */
+
+	public Coche getById(long id) {
+
+		Coche coche = null;
+
+		try (Connection conn = ConnectionManager.getConnection();
+				PreparedStatement pst = conn.prepareStatement(SQL_GETBYID);) {
+			pst.setLong(1, id);
+
+			try (ResultSet rs = pst.executeQuery()) {
+				while (rs.next()) {
+					coche = rowMapper(rs);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return coche;
+	}
+
+//funcion insertar coche 
+
+	/**
+	 * 
+	 * 
+	 * 
+	 * @param coche con los datos
+	 * @return retorna el coche con los datos y la id que se genera
+	 * @throws SQLException si la matricula ya existe
+	 */
+
+	public Coche insertarCoche(Coche coche) throws SQLException {
+
+		try (Connection conn = ConnectionManager.getConnection();
+				CallableStatement cs = conn.prepareCall(SQL_INSERTCOCHE);) {
+			cs.setString(1, coche.getMatricula());
+			cs.setString(2, coche.getModelo());
+			cs.setInt(3, coche.getKm());
+			cs.registerOutParameter(4, Types.INTEGER);
+
+			if (cs.executeUpdate() == 1) {
+				coche.setId(cs.getLong(4));
+			} else {
+				throw new SQLException("No se puede insertar el coche " + coche);
+			}
+		}
+		return coche;
+	}
+
+	/**
+	 * 
+	 * @param id
+	 * @return true si eleimina el coche, false si no hay donde borrar
+	 * @throws SQLException
+	 */
+	public boolean delete(long id) throws SQLException {
+		boolean resul = false;
+		try (Connection conn = ConnectionManager.getConnection();
+				CallableStatement cs = conn.prepareCall(SQL_DELETE);) {
+
+			cs.setLong(1, id);
+
+			if (cs.executeUpdate() == 1) {
+
+				resul = true;
+			}
+			return resul;
+
+		}
 
 	}
 
 	/**
-	 * Obtenemos un Coche por su identificador
-	 * 
-	 * @param id long identificador del Coche
-	 * @return Coche con datos si encuentra, null si no encuentra
+	 * @lanzamos sql exception si la matricula ya existe
+	 *
 	 */
-	public Coche getById(long id) {
+	public boolean update(Coche coche) throws SQLException {
 
-		Coche c = null;
+		boolean resul = false;
 		try (Connection conn = ConnectionManager.getConnection();
-				PreparedStatement cs = conn.prepareStatement(SQL_GETBYID);) {
+				CallableStatement cs = conn.prepareCall(SQL_UPDATE);) {
 
-			cs.setLong(1, id);
+			cs.setString(1, coche.getModelo());
 
-			try (ResultSet rs = cs.executeQuery()) {
+			cs.setInt(2, coche.getKm());
+			cs.setLong(3, coche.getId());
 
-				while (rs.next()) {
-					c = rowMapper(rs);
-				}
+			int affectedRows = cs.executeUpdate();
+			if (affectedRows == 1) {
+
+				resul = true;
 			}
+			return resul;
 
-		} catch (Exception e) {
-			LOG.error(e);
 		}
+
+	}
+
+	/**
+	 * 
+	 * @param rs
+	 * @return
+	 * @throws SQLException
+	 */
+	private Coche rowMapper(ResultSet rs) throws SQLException {
+		Coche c = new Coche();
+		c.setId(rs.getLong("id"));
+		c.setMatricula(rs.getString("matricula"));
+		c.setModelo(rs.getString("modelo"));
+		c.setKm(rs.getInt("km"));
 		return c;
 	}
 
 	/**
-	 * Obtenemos un Coche por su matricula
 	 * 
-	 * @param matricula String matricula del coche
-	 * @return Coche con datos si lo encuentra, null si no encuentra
+	 * 
+	 * Obtenemos un coche por su matricula
+	 * 
+	 * @param mat String , matricula del coche
+	 * @return Coche y sus datos si lo encuentra, null si no hay
 	 */
-	public Coche getByMatricula(String matricula) {
+
+	public Coche getByMatricula(String mat) {
 		Coche c = null;
 		try (Connection conn = ConnectionManager.getConnection();
 				CallableStatement cs = conn.prepareCall(SQL_GETMATRICULA);) {
 
-			cs.setString(1, matricula);
+			cs.setString(1, mat);
 
 			try (ResultSet rs = cs.executeQuery()) {
 				try {
@@ -123,86 +212,6 @@ public class CocheDAO {
 		} catch (Exception e) {
 			LOG.error(e);
 		}
-		return c;
-	}
-
-	/**
-	 * Obtiene una coleccion de Coche ordenado por identificador descendente y
-	 * limitado a 100
-	 * 
-	 * @return si no existe ninguno new ArrayList<Coche>()
-	 */
-	public ArrayList<Coche> getAll() {
-
-		ArrayList<Coche> coches = new ArrayList<Coche>();
-
-		try (Connection conn = ConnectionManager.getConnection();
-				PreparedStatement pst = conn.prepareStatement(SQL_GETALL);
-				ResultSet rs = pst.executeQuery()) {
-
-			while (rs.next()) {
-				coches.add(rowMapper(rs));
-			}
-
-		} catch (Exception e) {
-			LOG.error(e);
-		}
-		return coches;
-	}
-
-	/**
-	 * Eliminar un Coche de la base datos
-	 * 
-	 * @param id identificaodr del Coche
-	 * @return true si elimina, false en caso contrario
-	 * @throws SQLException Si el Coche tiene alguna multa asociada ( integridad
-	 *                      referencial )
-	 */
-	public boolean delete(long id) throws SQLException {
-
-		boolean resul = false;
-		try (Connection conn = ConnectionManager.getConnection();
-				CallableStatement cs = conn.prepareCall(SQL_DELETEBYID);) {
-
-			cs.setLong(1, id);
-			if (cs.executeUpdate() == 1) {
-				resul = true;
-			}
-		}
-		return resul;
-	}
-
-	
-	/**
-	 * Insertar un nuevo Coche
-	 * @param coche con datos
-	 * @return Coche con los mismos datos y la id generada
-	 * @throws SQLException si la matricula ya existe
-	 */
-	public Coche insert(Coche coche) throws SQLException {
-
-		try (Connection conn = ConnectionManager.getConnection();
-				CallableStatement cs = conn.prepareCall(SQL_INSERT);) {
-			cs.setString(1, coche.getMatricula());
-			cs.setString(2, coche.getModelo());
-			cs.setInt(3, coche.getKm());
-			cs.registerOutParameter(4, Types.INTEGER);
-			
-			if ( cs.executeUpdate() == 1) {
-				coche.setId(cs.getLong(4));
-			} else {
-				throw new SQLException("No se puede insertar el coche " + coche );
-			}
-		}
-		return coche;
-	}
-
-	private Coche rowMapper(ResultSet rs) throws SQLException {
-		Coche c = new Coche();
-		c.setId(rs.getLong("id"));
-		c.setMatricula(rs.getString("matricula"));
-		c.setModelo(rs.getString("modelo"));
-		c.setKm(rs.getInt("km"));
 		return c;
 	}
 }
